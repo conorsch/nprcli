@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import print_function
 import feedparser
 import requests
 import arrow
@@ -54,8 +55,7 @@ class Show(object):
         return episodes
 
     def find_todays_show(self):
-        now = arrow.now()
-        today = now.format('dddd')
+        today = arrow.now().format('dddd')
         feeds = self.feeds()
 
         if today == 'Saturday':
@@ -136,8 +136,8 @@ class Player(object):
 
     def pretty_info(self):
         if self.now_playing:
-            msg = "{e.title}".format(e=self.now_playing)
-            sys.stdout.write(msg+"\r")
+            msg = "\n - {e.title}".format(e=self.now_playing)
+            print(msg, end='')
 
     def kill(self, exit=None):
         if self.pid:
