@@ -1,0 +1,21 @@
+$ python scratch.py 
+Now playing: Weekend Edition Saturday (Sat, 20 Sep 2014 10:16:00 -0400)
+Traceback (most recent call last):
+  File "scratch.py", line 8, in <module>
+    status = p.play()
+  File "/home/conor/gits/nprpy/npr/show.py", line 117, in play
+    self.next_track()
+  File "/home/conor/gits/nprpy/npr/show.py", line 158, in next_track
+    self.play(next_item)
+  File "/home/conor/gits/nprpy/npr/show.py", line 120, in play
+    cmd = ['/usr/bin/mplayer', '-cache-min', '20', episode.mp3]
+  File "/home/conor/gits/nprpy/npr/utils.py", line 11, in _lazyproperty
+    setattr(self, attr_name, fn(self))
+  File "/home/conor/gits/nprpy/npr/show.py", line 90, in mp3
+    return self._soup.find('a', attrs={'class': 'download'}, href=True)['href']
+TypeError: 'NoneType' object has no attribute '__getitem__'
+
+
+
+# THEN, from http://www.npr.org/2014/09/20/350080346/texas-gubernatorial-candidates-go-the-border-to-court-voters?utm_medium=RSS&utm_campaign=weekendeditionsaturday :
+Audio for this story from Weekend Edition Saturday will be available at approximately 12:00 p.m. ET.
