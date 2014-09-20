@@ -1,9 +1,9 @@
 import termios, fcntl, sys, os
 import requests
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
-# Yanked from http://stackoverflow.com/a/3013910/140800
 def lazyproperty(fn):
+    # Yanked from http://stackoverflow.com/a/3013910/140800
     attr_name = '_lazy_' + fn.__name__
     @property
     def _lazyproperty(self):
@@ -13,14 +13,14 @@ def lazyproperty(fn):
     return _lazyproperty
 
 def get_next_item(playlist, item):
-    """Accepts dict playlist and optional current item, returns next item in playlist."""
+    """Accepts playlist and optional current item, returns next item in playlist."""
     try:
         return playlist[playlist.index(item) + 1]
     except (IndexError, ValueError) as e:
         return playlist[0]
 
 def get_previous_item(playlist, item):
-    """Accepts dict playlist and optional current item, returns previous item in playlist."""
+    """Accepts playlist and optional current item, returns previous item in playlist."""
     try:
         return playlist[playlist.index(item) - 1]
     except (IndexError, ValueError) as e:
@@ -61,3 +61,4 @@ def listen_for_keypress(dispatch_table):
     finally:
         termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
         fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
+

@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import print_function
-import feedparser
 import requests
 import arrow
 import sys
@@ -8,8 +6,8 @@ import os
 import subprocess
 import signal
 
-from BeautifulSoup import BeautifulSoup
-from audioread import audio_open
+from bs4 import BeautifulSoup
+import xmltodict
 from .utils import lazyproperty, get_next_item, get_previous_item, listen_for_keypress
 
 
@@ -27,26 +25,23 @@ class Show(object):
         }
 
     @lazyproperty
-    def _raw_feed(self):
-        d = feedparser.parse(self.feed)
-        if not d.entries:
-            raise Exception("Could not retrieve RSS feed. Check internet connection.")
-        return d
+    def _stew(self):
+        r = requests.get(self.feed)
+        if not r.ok:
+            raise Exception("Could not retrieve URL. Check internet connection")
+        return xmltodict.parse(r.content)['rss']['channel']
 
     @lazyproperty
     def date(self):
-        return self._raw_feed['feed']['updated']
+        return self._stew['lastBuildDate'].strip()
 
     @lazyproperty
     def title(self):
-        return self._raw_feed['feed']['title']
+        return self._stew['title'].strip()
 
-    @lazyproperty
-    def title(self):
-        return self._raw_feed['feed']['title']
     @lazyproperty
     def articles(self):
-        return [e.link for e in self._raw_feed.entries]
+        return [a['link'] for a in self._stew['item']]
 
     @lazyproperty
     def episodes(self):
@@ -79,23 +74,23 @@ class Episode(object):
         r = requests.get(self.url)
         if not r.ok:
             raise Exception("Could not retrieve URL. Check internet connection")
-        return BeautifulSoup(r.content, convertEntities=BeautifulSoup.HTML_ENTITIES)
+        return BeautifulSoup(r.content)
 
     @lazyproperty
     def title(self):
-        return self._soup.find('div', attrs={'class': 'storytitle'}).getText()
+        return self._soup.find('div', attrs={'class': 'storytitle'}).getText().strip()
 
     @lazyproperty
     def mp3(self):
-        return self._soup.find('a', attrs={'class': 'download'}, href=True)['href']
+        return self._soup.find('a', attrs={'class': 'download'}, href=True)['href'].strip()
 
     @lazyproperty
     def program(self):
-        return self._soup.find('a', attrs={'class': 'program'}).getText()
+        return self._soup.find('a', attrs={'class': 'program'}).getText().strip()
 
     @lazyproperty
     def date(self):
-        return self._soup.find('span', attrs={'class': 'date'}).getText()
+        return self._soup.find('span', attrs={'class': 'date'}).getText().strip()
 
     def __str__(self):
         return "{0} ({1}) - {2}".format(self.program, self.date, self.title)
@@ -118,14 +113,18 @@ class Player(object):
             'q': self.quit,
         }
 
+        #signal.signal(signal.SIGINT, clean_up_terminal)
+
     def play(self, episode=None):
         if not episode:
             self.next_track()
         self.now_playing = episode
 
-        cmd = ['/usr/bin/mplayer', '-cache-min', '20', episode.mp3]
+        cmd = ['/usr/bin/mplayer', '-noconsolecontrols', '-cache-min', '20', episode.mp3]
+
+        FNULL = open(os.devnull, 'w')
         self.kill()
-        self.pid = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE).pid
+        self.pid = subprocess.Popen(cmd, stdout=FNULL, stderr=FNULL).pid
 
         self.pretty_info()
         listen_for_keypress(self.keybindings)
@@ -136,7 +135,7 @@ class Player(object):
 
     def pretty_info(self):
         if self.now_playing:
-            msg = "\n - {e.title}".format(e=self.now_playing)
+            msg = "\n - '{e.title}'".format(e=self.now_playing)
             print(msg, end='')
 
     def kill(self, exit=None):
@@ -147,8 +146,7 @@ class Player(object):
 
     def quit(self):
         self.kill()
-        sys.stdout.write("\nExit.\n")
-        sys.stdout.flush()
+        print("\nExit")
         sys.exit(0)
 
     def next_track(self):
