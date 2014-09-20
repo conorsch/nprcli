@@ -1,6 +1,6 @@
-
-from BeautifulSoup import BeautifulSoup
+import termios, fcntl, sys, os
 import requests
+from BeautifulSoup import BeautifulSoup
 
 # Yanked from http://stackoverflow.com/a/3013910/140800
 def lazyproperty(fn):
@@ -37,3 +37,27 @@ def download_file(url):
                 f.write(chunk)
                 f.flush()
     return local_filename
+
+def listen_for_keypress(dispatch_table):
+    # Straight out of the docs: https://docs.python.org/2/faq/library.html#how-do-i-get-a-single-keypress-at-a-time
+    fd = sys.stdin.fileno()
+
+    oldterm = termios.tcgetattr(fd)
+    newattr = termios.tcgetattr(fd)
+    newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
+    termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+    oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+
+    try:
+        while 1:
+            try:
+                c = sys.stdin.read(1)
+                f = dispatch_table[c]
+                f()
+            except IOError: pass
+            except KeyError: pass
+    finally:
+        termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
+        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)

@@ -6,10 +6,10 @@ import sys
 import os
 import subprocess
 import signal
+
 from BeautifulSoup import BeautifulSoup
 from audioread import audio_open
-from .utils import lazyproperty, get_next_item, get_previous_item
-from mplayer import Player
+from .utils import lazyproperty, get_next_item, get_previous_item, listen_for_keypress
 
 
 class Show(object):
@@ -112,6 +112,12 @@ class Player(object):
         self.now_playing = None
         self.pid = None
 
+        self.keybindings = {
+            'n': self.next_track,
+            'p': self.previous_track,
+            'q': self.quit,
+        }
+
     def play(self, episode=None):
         if not episode:
             self.next_track()
@@ -122,14 +128,7 @@ class Player(object):
         self.pid = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE).pid
 
         self.pretty_info()
-        while True:
-            x = raw_input().rstrip("\n")
-            if x == 'n':
-                self.next_track()
-            elif x == 'p':
-                self.previous_track()
-            elif x == 'q':
-                self.quit()
+        listen_for_keypress(self.keybindings)
         
     @lazyproperty
     def playlist(self):
