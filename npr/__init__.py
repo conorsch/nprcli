@@ -1,5 +1,1 @@
-from .show import Show, Player, Episode
-Show = Show
-Player = Player
-Episode = Episode
-
+from .models import Show, Player, Episode

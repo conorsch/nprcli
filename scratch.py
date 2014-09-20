@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 import npr
-#s = npr.show.Show()
 
 
 if __name__ == '__main__':
@@ -7,3 +7,4 @@ if __name__ == '__main__':
     while True:
        status = p.play()
        status.wait()
+

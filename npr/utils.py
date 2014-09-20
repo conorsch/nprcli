@@ -2,6 +2,7 @@ import termios, fcntl, sys, os
 import requests
 from bs4 import BeautifulSoup
 
+
 def lazyproperty(fn):
     # Yanked from http://stackoverflow.com/a/3013910/140800
     attr_name = '_lazy_' + fn.__name__

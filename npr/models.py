@@ -147,8 +147,7 @@ class Player(object):
 
     def quit(self):
         self.kill()
-        print("\nExit")
-        os.system('stty sane')
+        print("\n\nExit")
         sys.exit(0)
 
     def next_track(self):
