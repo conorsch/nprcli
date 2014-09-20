@@ -5,10 +5,11 @@ import sys
 import os
 import subprocess
 import signal
-
 from bs4 import BeautifulSoup
 import xmltodict
-from .utils import lazyproperty, get_next_item, get_previous_item, listen_for_keypress
+
+from . import utils
+from .utils import lazyproperty
 
 
 class Show(object):
@@ -127,7 +128,7 @@ class Player(object):
         self.pid = subprocess.Popen(cmd, stdout=FNULL, stderr=FNULL).pid
 
         self.pretty_info()
-        listen_for_keypress(self.keybindings)
+        utils.listen_for_keypress(self.keybindings)
         
     @lazyproperty
     def playlist(self):
@@ -147,15 +148,16 @@ class Player(object):
     def quit(self):
         self.kill()
         print("\nExit")
+        os.system('stty sane')
         sys.exit(0)
 
     def next_track(self):
-        next_item = get_next_item(self.playlist, self.now_playing)
+        next_item = utils.get_next_item(self.playlist, self.now_playing)
         self.now_playing = next_item
         self.play(next_item)
 
     def previous_track(self):
-        previous_item = get_previous_item(self.playlist, self.now_playing)
+        previous_item = utils.get_previous_item(self.playlist, self.now_playing)
         self.now_playing = previous_item
         self.play(previous_item)
 
